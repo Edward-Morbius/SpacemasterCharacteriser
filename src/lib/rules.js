@@ -22,14 +22,14 @@ export function rankBonus(rs,r){r=+r||0;if(r<=0)return rs.zero;let t=0,prev=0;fo
 // Development / psion power points for a stat value (null above the chart's 100).
 export const statDevPP=(r,v)=>{v=+v||0;for(const[m,d,p]of r.statDevPP)if(v<=m)return{dev:d,pp:p};return null}
 export const rs=c=>RULESETS[c.ruleset]||RULESETS.current
-export const statTotal=(c,k)=>c.stats[k]?statBonus(rs(c),c.stats[k].t)+(+c.stats[k].r||0):0
+export const statTotal=(c,k)=>c.stats[k]?statBonus(rs(c),c.stats[k].t)+(+c.stats[k].r||0)+(+c.stats[k].m||0):0
 // Stat bonus for a skill: the average of its 1-3 stat totals, rounded half away from zero (as the sheet's ROUND does).
 export function skillStat(c,st){const l=(st||[]).filter(Boolean);if(!l.length)return 0
   const sum=l.reduce((s,k)=>s+statTotal(c,k),0),q=Math.floor(Math.abs(sum)/l.length+0.5);return sum<0?-q:q}
 export const skillTotal=(c,k)=>rankBonus(rs(c),k.ranks)+skillStat(c,k.stats)+(+k.other||0)
 export const SCHEMA=2
 export const newChar=()=>({id:'c'+Date.now()+Math.random().toString(36).slice(2,5),schema:SCHEMA,ruleset:'current',name:'New Character',player:'',race:'',prof:'',level:1,xp:0,hp:0,hpMax:0,pp:0,ppMax:0,ob:0,db:0,at:1,
-  stats:Object.fromEntries(ST.map(s=>[s[0],{t:50,p:50,r:0}])),skills:SKILLS.map(([cat,name,stats])=>({name,cat,stats:[...stats],ranks:0,other:0})),items:[],notes:'',portrait:''})
+  stats:Object.fromEntries(ST.map(s=>[s[0],{t:50,p:50,r:0,m:0}])),skills:SKILLS.map(([cat,name,stats])=>({name,cat,stats:[...stats],ranks:0,other:0})),items:[],notes:'',portrait:''})
 // Hook for future schema changes: upgrade old exports here.
 export function migrate(c){c.schema??=1
   if(c.schema<2){for(const k of c.skills||[]){k.stats=[k.s1,k.s2].filter(Boolean);delete k.s1;delete k.s2};c.schema=2} // v2: 1-3 stats per skill
