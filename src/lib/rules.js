@@ -34,3 +34,7 @@ export const newChar=()=>({id:'c'+Date.now()+Math.random().toString(36).slice(2,
 export function migrate(c){c.schema??=1
   if(c.schema<2){for(const k of c.skills||[]){k.stats=[k.s1,k.s2].filter(Boolean);delete k.s1;delete k.s2};c.schema=2} // v2: 1-3 stats per skill
   return{...newChar(),...c}}
+// d100 roll. Open-ended: 96-100 rolls again and adds (repeating while 96+); 01-05 rolls once more and subtracts.
+export function d100(open=true,rnd=()=>1+Math.floor(Math.random()*100)){const rolls=[rnd()];let value=rolls[0]
+  if(open){if(rolls[0]>=96){let n;do{n=rnd();rolls.push(n);value+=n}while(n>=96)}else if(rolls[0]<=5){const n=rnd();rolls.push(n);value-=n}}
+  return{rolls,value}}

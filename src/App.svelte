@@ -1,6 +1,7 @@
 <script>
 import {onMount} from 'svelte'
 import {app,persist,load,add,remove,exportJSON,importJSON,portrait} from './lib/store.svelte.js'
+import {log,rollCheck} from './lib/log.svelte.js'
 import {SKILLS,CATEGORIES} from './lib/skills.js'
 import {ST,RULESETS,statBonus,statTotal,skillTotal,rs} from './lib/rules.js'
 let tab=$state('Sheet'),impEl,picEl,cat=$state(CATEGORIES[0]),pick=$state('')
@@ -40,10 +41,11 @@ const weight=$derived(c?c.items.reduce((s,i)=>s+(+i.qty||0)*(+i.wt||0),0):0)
 {#each ST as [k,n]}<tr><td title={n}><b style="color:var(--tx)">{k}</b></td><td><input type="number" bind:value={c.stats[k].t}></td><td><input type="number" bind:value={c.stats[k].p}></td>
 <td class="n">{fmt(statBonus(rs(c),c.stats[k].t))}</td><td><input type="number" bind:value={c.stats[k].r}></td><td><input type="number" bind:value={c.stats[k].m}></td><td class="n">{fmt(statTotal(c,k))}</td></tr>{/each}</tbody></table></div></div>
 {:else if tab==='Skills'}
-<div class="card"><h3>Skills</h3><p><input type="search" placeholder="Filter skills…" bind:value={q}> <label style="display:inline"><input type="checkbox" bind:checked={hide0}> Hide skills with 0 ranks</label> <span class="mu" style="margin-left:12px">{rows.length} of {c.skills.length} shown</span></p><div class="w"><table><thead><tr><th>Skill</th><th>Stat 1</th><th>Stat 2</th><th>Stat 3</th><th>Ranks</th><th>Other</th><th>Total</th><th></th></tr></thead><tbody>
-{#each rows as {k,i,head} (i)}{#if head}<tr class="cat"><td colspan="8">{head}</td></tr>{/if}<tr><td><input bind:value={k.name}></td>
+<div class="card"><h3>Skills</h3><p><input type="search" placeholder="Filter skills…" bind:value={q}> <label style="display:inline"><input type="checkbox" bind:checked={hide0}> Hide skills with 0 ranks</label> <span class="mu" style="margin-left:12px">{rows.length} of {c.skills.length} shown</span></p><div class="w"><table><thead><tr><th>Skill</th><th>Stat 1</th><th>Stat 2</th><th>Stat 3</th><th>Ranks</th><th>Other</th><th>Total</th><th></th><th></th></tr></thead><tbody>
+{#each rows as {k,i,head} (i)}{#if head}<tr class="cat"><td colspan="9">{head}</td></tr>{/if}<tr><td><input bind:value={k.name}></td>
 {#each [0,1,2] as j}<td><select value={k.stats[j]??''} onchange={e=>{const v=[0,1,2].map(n=>n===j?e.target.value:k.stats[n]??'');k.stats=v.filter(Boolean)}}><option value="">–</option>{#each ST as s}<option>{s[0]}</option>{/each}</select></td>{/each}
 <td><input type="number" bind:value={k.ranks}></td><td><input type="number" bind:value={k.other}></td><td class="n">{fmt(skillTotal(c,k))}</td>
+<td><button class="p" onclick={()=>rollCheck(k.name,skillTotal(c,k))}>Roll</button></td>
 <td><button class="d" onclick={()=>c.skills.splice(i,1)}>×</button></td></tr>{/each}</tbody></table></div>
 <p><select bind:value={cat}>{#each CATEGORIES as g}<option>{g}</option>{/each}</select> <select bind:value={pick}><option value="">Preset skill…</option>{#each inCat as s}<option>{s[1]}</option>{/each}</select> <button onclick={addPreset} disabled={!pick}>Add preset</button> &nbsp; <button class="p" onclick={()=>c.skills.push({name:'',stats:[],ranks:0,other:0})}>+ Skill</button></p>
 <p class="mu">Rank and stat bonuses come from the ruleset in src/lib/rules.js. A skill's 1–3 stats are averaged (rounded half away from zero); repeat a stat to weight it.</p></div>
@@ -60,3 +62,8 @@ const weight=$derived(c?c.items.reduce((s,i)=>s+(+i.qty||0)*(+i.wt||0),0):0)
 {/if}{/if}
 <p class="mu">Saved automatically in this browser. Use Export for backups.</p>
 </main>
+<aside class="log" class:big={log.big}>
+  <div class="lh"><b>Log</b> <label>Situation <input type="number" class="sit" bind:value={log.sit}></label> <label><input type="checkbox" bind:checked={log.open}> Open-ended</label>
+    <span style="flex:1"></span><button onclick={()=>log.rows.length=0} disabled={!log.rows.length}>Clear</button> <button onclick={()=>log.big=!log.big}>{log.big?'Show 4':'Show 20'}</button></div>
+  <div class="lr">{#each log.rows as r (r.id)}<div class="row"><span class="tot">{r.total}</span><span class="tx"><b>{r.title}</b><small>{r.detail}</small></span></div>{:else}<div class="row mu">No entries yet.</div>{/each}</div>
+</aside>
