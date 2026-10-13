@@ -1,0 +1,13 @@
+services:
+  dev:
+    build: .
+    ports:
+      - "5173:5173"   # dev server (hot reload)
+      - "4173:4173"   # production preview (npm run preview)
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true   # reliable file watching on mounted volumes
+volumes:
+  node_modules:
