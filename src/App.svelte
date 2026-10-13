@@ -3,7 +3,7 @@ import {onMount} from 'svelte'
 import {app,persist,load,add,remove,exportJSON,importJSON,portrait} from './lib/store.svelte.js'
 import {log,rollCheck} from './lib/log.svelte.js'
 import {SKILLS,CATEGORIES} from './lib/skills.js'
-import {ST,RULESETS,statBonus,statTotal,skillTotal,rs} from './lib/rules.js'
+import {ST,RESISTANCES,resTotal,RULESETS,statBonus,statTotal,skillTotal,rs} from './lib/rules.js'
 let tab=$state('Sheet'),impEl,picEl,cat=$state(CATEGORIES[0]),pick=$state('')
 let q=$state(''),hide0=$state(false)
 const rows=$derived.by(()=>{if(!c)return[];const f=q.trim().toLowerCase();let prev;const out=[]
@@ -40,6 +40,10 @@ const weight=$derived(c?c.items.reduce((s,i)=>s+(+i.qty||0)*(+i.wt||0),0):0)
 <div class="card"><h3>Stats</h3><div class="w"><table><thead><tr><th></th><th>Temp</th><th>Pot</th><th>Norm</th><th>Race</th><th>Misc</th><th>Total</th><th></th></tr></thead><tbody>
 {#each ST as [k,n]}<tr><td title={n}><b style="color:var(--tx)">{k}</b></td><td><input type="number" bind:value={c.stats[k].t}></td><td><input type="number" bind:value={c.stats[k].p}></td>
 <td class="n">{fmt(statBonus(rs(c),c.stats[k].t))}</td><td><input type="number" bind:value={c.stats[k].r}></td><td><input type="number" bind:value={c.stats[k].m}></td><td class="n">{fmt(statTotal(c,k))}</td><td><button class="p" onclick={()=>rollCheck(n,statTotal(c,k),'stat')}>Roll</button></td></tr>{/each}</tbody></table></div></div>
+<div class="card"><h3>Resistance Rolls</h3><div class="w"><table><thead><tr><th></th><th>Stat</th><th>Stat bonus</th><th>Race</th><th>Misc</th><th>Total</th><th></th></tr></thead><tbody>
+{#each RESISTANCES as [n,s]}<tr><td><b style="color:var(--tx)">{n}</b></td><td>{s}</td><td class="n">{fmt(statTotal(c,s))}</td>
+<td><input type="number" bind:value={c.res[n].r}></td><td><input type="number" bind:value={c.res[n].m}></td><td class="n">{fmt(resTotal(c,n,s))}</td>
+<td><button class="p" onclick={()=>rollCheck(n+' resistance',resTotal(c,n,s),'resistance')}>Roll</button></td></tr>{/each}</tbody></table></div></div>
 {:else if tab==='Skills'}
 <div class="card"><h3>Skills</h3><p><input type="search" placeholder="Filter skills…" bind:value={q}> <label style="display:inline"><input type="checkbox" bind:checked={hide0}> Hide skills with 0 ranks</label> <span class="mu" style="margin-left:12px">{rows.length} of {c.skills.length} shown</span></p><div class="w"><table><thead><tr><th>Skill</th><th>Stat 1</th><th>Stat 2</th><th>Stat 3</th><th>Ranks</th><th>Other</th><th>Total</th><th></th><th></th></tr></thead><tbody>
 {#each rows as {k,i,head} (i)}{#if head}<tr class="cat"><td colspan="9">{head}</td></tr>{/if}<tr><td><input bind:value={k.name}></td>

@@ -1,6 +1,10 @@
 import {SKILLS} from './skills.js'
 // Rulesets are data. Add a new one here (or load from JSON) without touching the UI.
 export const ST=[['CO','Constitution'],['AG','Agility'],['SD','Self Discipline'],['ME','Memory'],['RE','Reasoning'],['ST','Strength'],['QU','Quickness'],['PR','Presence'],['EM','Empathy'],['IN','Intuition']]
+// Resistance rolls: [name, stat code]. Total = that stat's total + Race + Misc (as in the sheet).
+export const RESISTANCES=[['Essence','EM'],['Channeling','IN'],['Mentalism','PR'],['Psions','SD'],['Poison','CO'],['Disease','CO'],['Terror/Fear','SD']]
+const newRes=()=>Object.fromEntries(RESISTANCES.map(([n])=>[n,{r:0,m:0}]))
+export const resTotal=(c,n,s)=>statTotal(c,s)+(+c.res?.[n]?.r||0)+(+c.res?.[n]?.m||0)
 export const RULESETS={
   current:{name:'Current house rules',
     // [highest stat value in band, bonus]. Smoothed Stat Bonus Chart (Spacemaster Companion), 1-100.
@@ -27,12 +31,13 @@ export const statTotal=(c,k)=>c.stats[k]?statBonus(rs(c),c.stats[k].t)+(+c.stats
 export function skillStat(c,st){const l=(st||[]).filter(Boolean);if(!l.length)return 0
   const sum=l.reduce((s,k)=>s+statTotal(c,k),0),q=Math.floor(Math.abs(sum)/l.length+0.5);return sum<0?-q:q}
 export const skillTotal=(c,k)=>rankBonus(rs(c),k.ranks)+skillStat(c,k.stats)+(+k.other||0)
-export const SCHEMA=2
+export const SCHEMA=3
 export const newChar=()=>({id:'c'+Date.now()+Math.random().toString(36).slice(2,5),schema:SCHEMA,ruleset:'current',name:'New Character',player:'',race:'',prof:'',level:1,xp:0,hp:0,hpMax:0,pp:0,ppMax:0,ob:0,db:0,at:1,
-  stats:Object.fromEntries(ST.map(s=>[s[0],{t:50,p:50,r:0,m:0}])),skills:SKILLS.map(([cat,name,stats])=>({name,cat,stats:[...stats],ranks:0,other:0})),items:[],notes:'',portrait:''})
+  stats:Object.fromEntries(ST.map(s=>[s[0],{t:50,p:50,r:0,m:0}])),skills:SKILLS.map(([cat,name,stats])=>({name,cat,stats:[...stats],ranks:0,other:0})),res:newRes(),items:[],notes:'',portrait:''})
 // Hook for future schema changes: upgrade old exports here.
 export function migrate(c){c.schema??=1
   if(c.schema<2){for(const k of c.skills||[]){k.stats=[k.s1,k.s2].filter(Boolean);delete k.s1;delete k.s2};c.schema=2} // v2: 1-3 stats per skill
+  if(c.schema<3){c.res??=newRes();c.schema=3} // v3: resistance rolls
   return{...newChar(),...c}}
 // d100 roll. Open-ended: 96-100 rolls again and adds (repeating while 96+); 01-05 rolls once more and subtracts.
 export function d100(open=true,rnd=()=>1+Math.floor(Math.random()*100)){const rolls=[rnd()];let value=rolls[0]
