@@ -37,9 +37,9 @@ const weight=$derived(c?c.items.reduce((s,i)=>s+(+i.qty||0)*(+i.wt||0),0):0)
 <div class="card"><h3>Combat</h3><div class="g">
 <label>Hits<input type="number" bind:value={c.hp}></label><label>Max hits<input type="number" bind:value={c.hpMax}></label><label>Power pts<input type="number" bind:value={c.pp}></label><label>Max PP<input type="number" bind:value={c.ppMax}></label>
 <label>OB<input type="number" bind:value={c.ob}></label><label>DB<input type="number" bind:value={c.db}></label><label>AT<input type="number" bind:value={c.at}></label></div></div>
-<div class="card"><h3>Stats</h3><div class="w"><table><thead><tr><th></th><th>Temp</th><th>Pot</th><th>Norm</th><th>Race</th><th>Misc</th><th>Total</th></tr></thead><tbody>
+<div class="card"><h3>Stats</h3><div class="w"><table><thead><tr><th></th><th>Temp</th><th>Pot</th><th>Norm</th><th>Race</th><th>Misc</th><th>Total</th><th></th></tr></thead><tbody>
 {#each ST as [k,n]}<tr><td title={n}><b style="color:var(--tx)">{k}</b></td><td><input type="number" bind:value={c.stats[k].t}></td><td><input type="number" bind:value={c.stats[k].p}></td>
-<td class="n">{fmt(statBonus(rs(c),c.stats[k].t))}</td><td><input type="number" bind:value={c.stats[k].r}></td><td><input type="number" bind:value={c.stats[k].m}></td><td class="n">{fmt(statTotal(c,k))}</td></tr>{/each}</tbody></table></div></div>
+<td class="n">{fmt(statBonus(rs(c),c.stats[k].t))}</td><td><input type="number" bind:value={c.stats[k].r}></td><td><input type="number" bind:value={c.stats[k].m}></td><td class="n">{fmt(statTotal(c,k))}</td><td><button class="p" onclick={()=>rollCheck(n,statTotal(c,k),'stat')}>Roll</button></td></tr>{/each}</tbody></table></div></div>
 {:else if tab==='Skills'}
 <div class="card"><h3>Skills</h3><p><input type="search" placeholder="Filter skills…" bind:value={q}> <label style="display:inline"><input type="checkbox" bind:checked={hide0}> Hide skills with 0 ranks</label> <span class="mu" style="margin-left:12px">{rows.length} of {c.skills.length} shown</span></p><div class="w"><table><thead><tr><th>Skill</th><th>Stat 1</th><th>Stat 2</th><th>Stat 3</th><th>Ranks</th><th>Other</th><th>Total</th><th></th><th></th></tr></thead><tbody>
 {#each rows as {k,i,head} (i)}{#if head}<tr class="cat"><td colspan="9">{head}</td></tr>{/if}<tr><td><input bind:value={k.name}></td>
