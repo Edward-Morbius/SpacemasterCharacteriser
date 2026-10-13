@@ -4,7 +4,7 @@ const db=new Dexie('sm2');db.version(1).stores({chars:'id'})
 export const app=$state({chars:[],cur:null,ready:false})
 export const current=()=>app.chars.find(c=>c.id===app.cur)
 export const persist=c=>db.chars.put($state.snapshot(c))
-export async function load(){app.chars=await db.chars.toArray();app.cur=app.chars[0]?.id??null;app.ready=true;try{navigator.storage?.persist?.()}catch{}}
+export async function load(){app.chars=(await db.chars.toArray()).map(c=>{if((c.schema??1)===SCHEMA)return c;const m=migrate(c);persist(m);return m});app.cur=app.chars[0]?.id??null;app.ready=true;try{navigator.storage?.persist?.()}catch{}}
 export function add(){const c=newChar();app.chars.push(c);app.cur=c.id;persist(c)}
 export function remove(){const c=current();if(!c||!confirm('Delete '+c.name+'?'))return;db.chars.delete(c.id);app.chars=app.chars.filter(x=>x.id!==c.id);app.cur=app.chars[0]?.id??null}
 export function exportJSON(all){const list=all?app.chars:[current()];const a=document.createElement('a')
